@@ -1,6 +1,6 @@
-/*.dialog {
+.dialog {
 	display: none;
-}*/
+}
 
 .dialog.opened {
 	display: block;
