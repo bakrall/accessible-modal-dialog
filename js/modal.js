@@ -70,6 +70,12 @@ function loopFocusInsideModal(e) {
 		shiftPressed = e.keyCode === KEYCODE.SHIFT,
 		indexOfButton = $dialogButtons.index(target);
 
+		/* 
+		e.preventDefault() is needed to make the loop of trapped focus working. Without it, when I press TAB on "Close", focus
+		goes to browser address bar. 
+		*/
+		e.preventDefault();
+
 		if (tabPressed || shiftPressed && tabPressed) {
 			if (indexOfButton === 1) {
 				$dialogButtons.get(0).focus();
