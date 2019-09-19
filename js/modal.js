@@ -1,35 +1,43 @@
-const modalTriggerButton = document.querySelector('.modal-trigger'),
-	dialog = document.querySelector('.dialog'),
-	dialogMask = dialog.querySelector('.dialog__mask'),
-	dialogWindow = dialog.querySelector('.dialog__window'),
+const $modalTriggerButton = $('.modal-trigger'),
+	$dialog = $('.dialog'),
+	$dialogMask = $dialog.find('.dialog__mask'),
+	$dialogWindow = $dialog.find('.dialog__window'),
+	$dialogButtons = $dialog.find('button'),
+	$closeButton = $dialog.find('.close-button'),
+	$okButton = $dialog.find('.ok-button'),
 	KEYCODE = {
-		ESC: 27
+		ESC: 27,
+		TAB: 9,
+		SHIFT: 16
 	};
 
 let previousActiveElement;
 
-modalTriggerButton.addEventListener('click', openDialog);
+$modalTriggerButton.on('click', openDialog);
 
 function openDialog() {
 	//Whenever I open the dialog, I look at the document's active element and I save that in a variable
 	previousActiveElement = document.activeElement;
 
-	Array.from(document.body.children).forEach(child => {
-		if (child != dialog) {
+	$('body').children().each((idx, child) => {
+		if (child != $dialog.get(0)) {
 			child.inert = true;
 		}
 	});
 
-	dialog.classList.add('opened');
+	$dialog.addClass('opened');
 
-	dialogMask.addEventListener('click', closeDialog);
-	dialogWindow.querySelectorAll('button').forEach(btn => {
-		btn.addEventListener('click', closeDialog);
-	});
-	document.addEventListener('keydown', checkCloseDialog);
+	$dialogMask.on('click', closeDialog);
 
-	dialog.querySelector('button').focus();
+	$dialogButtons.on('click', closeDialog);
+
+	$dialogButtons.on('keydown', loopFocusInsideModal);
+	
+	$(document).on('keydown', checkCloseDialog);
+
+	$dialog.find('button').get(0).focus();
 }
+
 
 function checkCloseDialog(e) {
 	if (e.keyCode === KEYCODE.ESC) {
@@ -39,18 +47,40 @@ function checkCloseDialog(e) {
 
 function closeDialog() {
 	//Clean up any event listeners
-	dialogMask.removeEventListener('click', closeDialog);
-	dialogWindow.querySelectorAll('button').forEach(btn => {
-		btn.removeEventListener('click', closeDialog);
+	$dialogMask.unbind('click');
+	$dialogWindow.find('button').each((idx, btn) => {
+		$(btn).unbind('click');
 	});
-	document.removeEventListener('keydown', checkCloseDialog);	
+	$(document).unbind('keydown', checkCloseDialog);	
 
-	Array.from(document.body.children).forEach(child => {
-		if (child != dialog);
+	$('body').children().each((idx, child) => {
+		if (child != $dialog.get(0)) {
 			child.inert = false;
+		}
 	});
 
-	dialog.classList.remove('opened');
+	$dialog.removeClass('opened');
 
 	previousActiveElement.focus();
 }
+
+function loopFocusInsideModal(e) {
+	const target = $(e.target),
+		tabPressed = e.keyCode === KEYCODE.TAB,
+		shiftPressed = e.keyCode === KEYCODE.SHIFT,
+		indexOfButton = $dialogButtons.index(target);
+
+		if (tabPressed || shiftPressed && tabPressed) {
+			if (indexOfButton === 1) {
+				$dialogButtons.get(0).focus();
+			} else if (indexOfButton === 0) {
+				$dialogButtons.get(1).focus();
+			}
+		}
+}
+
+function printToConsole() {
+	console.log('key was pressed');	
+}
+
+$(document).on('keydown', printToConsole);
